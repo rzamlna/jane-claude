@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>airdrop jane 🪂</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a24;
+      --surface3: #22222f;
+      --border: #2a2a3a;
+      --accent: #7c5cfc;
+      --accent2: #fc5c7d;
+      --accent3: #5cf4fc;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --green: #4ade80;
+      --yellow: #fbbf24;
+      --red: #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-tabs { display: flex; gap: 0.5rem; }
+
+    .nav-tab {
+      padding: 0.5rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .nav-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+    .nav-tab:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+
+    .page { display: none; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+    .section-title span {
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #9b6eff); color: white; }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-danger { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 0.3rem 0.7rem; font-size: 0.75rem; }
+    .btn-danger:hover { background: var(--red); color: white; }
+    .btn-sm { padding: 0.35rem 0.8rem; font-size: 0.78rem; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    select option { background: var(--surface2); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    .wallets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .wallet-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.2rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+
+    .wallet-card:hover { border-color: var(--accent); }
+    .wallet-name { font-weight: 700; font-size: 1rem; margin-bottom: 0.4rem; }
+    .wallet-address { font-size: 0.75rem; color: var(--muted); font-family: monospace; word-break: break-all; }
+    .wallet-actions { position: absolute; top: 1rem; right: 1rem; }
+
+    .table-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid var(--border); }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--surface2); }
+
+    th {
+      padding: 0.9rem 1rem;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.9rem 1rem;
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:hover td { background: var(--surface2); }
+    .project-name { font-weight: 600; }
+    .project-link { color: var(--accent3); text-decoration: none; font-size: 0.75rem; display: block; margin-top: 2px; }
+    .project-link:hover { text-decoration: underline; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-ongoing { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+    .badge-completed { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+    .badge-claim { background: rgba(124,92,252,0.15); color: var(--accent); border: 1px solid rgba(124,92,252,0.3); }
+    .type-badge { background: var(--surface3); color: var(--muted); border: 1px solid var(--border); font-size: 0.7rem; }
+
+    .wallet-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+    .wallet-tag {
+      background: rgba(92,244,252,0.1);
+      color: var(--accent3);
+      border: 1px solid rgba(92,244,252,0.2);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .wallet-checkboxes { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    .wallet-check-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      font-size: 0.85rem;
+    }
+
+    .wallet-check-item input[type="checkbox"] { width: auto; accent-color: var(--accent); }
+    .wallet-check-item:has(input:checked) { border-color: var(--accent); background: rgba(124,92,252,0.1); }
+
+    .filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+
+    .filter-btn {
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(124,92,252,0.1); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; }
+    .stat-label { font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+    .stat-value { font-size: 1.6rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .reward-table-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid var(--border); margin-top: 1.5rem; }
+
+    .total-row td { font-weight: 700; color: var(--accent); border-top: 2px solid var(--accent); }
+
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state p { font-size: 0.9rem; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 0.8rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      z-index: 999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      nav { padding: 1rem; }
+      .page { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🪂 airdrop jane</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('airdrops', this)">airdrops</button>
+    <button class="nav-tab" onclick="switchPage('wallets', this)">wallets</button>
+    <button class="nav-tab" onclick="switchPage('rewards', this)">rewards 💰</button>
+  </div>
+</nav>
+
+<!-- AIRDROPS PAGE -->
+<div class="page active" id="page-airdrops">
+  <div class="stats-grid" id="stats-grid"></div>
+  <div class="section-header">
+    <div class="section-title">my <span>airdrops</span></div>
+    <button class="btn btn-primary" onclick="openModal('airdrop-modal')">+ add airdrop</button>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all', this)">all</button>
+    <button class="filter-btn" onclick="setFilter('ongoing', this)">ongoing</button>
+    <button class="filter-btn" onclick="setFilter('completed', this)">completed</button>
+    <button class="filter-btn" onclick="setFilter('claim', this)">claim</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>project</th>
+          <th>type</th>
+          <th>wallets</th>
+          <th>twitter</th>
+          <th>email</th>
+          <th>status</th>
+          <th>date</th>
+          <th>reward</th>
+          <th>actions</th>
+        </tr>
+      </thead>
+      <tbody id="airdrops-tbody"><tr><td colspan="9" class="loading">loading...</td></tr></tbody>
+    </table>
+  </div>
+  <div id="airdrops-empty" class="empty-state" style="display:none">
+    <div class="emoji">🪂</div>
+    <p>no airdrops yet. add your first one!</p>
+  </div>
+</div>
+
+<!-- WALLETS PAGE -->
+<div class="page" id="page-wallets">
+  <div class="section-header">
+    <div class="section-title">my <span>wallets</span></div>
+    <button class="btn btn-primary" onclick="openModal('wallet-modal')">+ add wallet</button>
+  </div>
+  <div class="wallets-grid" id="wallets-grid"></div>
+  <div id="wallets-empty" class="empty-state" style="display:none">
+    <div class="emoji">👛</div>
+    <p>no wallets yet. add one first!</p>
+  </div>
+
+  <div class="section-header" style="margin-top:2.5rem">
+    <div class="section-title">my <span>twitter accounts</span></div>
+    <button class="btn btn-primary" onclick="openModal('twitter-modal')">+ add twitter</button>
+  </div>
+  <div class="wallets-grid" id="twitter-grid"></div>
+  <div id="twitter-empty" class="empty-state" style="display:none">
+    <div class="emoji">𝕏</div>
+    <p>no twitter accounts yet. add one!</p>
+  </div>
+
+  <div class="section-header" style="margin-top:2.5rem">
+    <div class="section-title">my <span>emails</span></div>
+    <button class="btn btn-primary" onclick="openModal('email-modal')">+ add email</button>
+  </div>
+  <div class="wallets-grid" id="email-grid"></div>
+  <div id="email-empty" class="empty-state" style="display:none">
+    <div class="emoji">📧</div>
+    <p>no email accounts yet. add one!</p>
+  </div>
+</div>
+
+<!-- REWARDS PAGE -->
+<div class="page" id="page-rewards">
+  <div class="section-header">
+    <div class="section-title">reward <span>summary</span></div>
+  </div>
+  <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1rem;">add reward manually for completed airdrops 👇</p>
+  <div class="reward-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>project</th>
+          <th>token</th>
+          <th>amount</th>
+          <th>usd value</th>
+          <th>notes</th>
+          <th>action</th>
+        </tr>
+      </thead>
+      <tbody id="rewards-tbody"><tr><td colspan="6" class="loading">loading...</td></tr></tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td colspan="3">total usd value</td>
+          <td id="total-usd">$0</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <div id="rewards-empty" class="empty-state" style="display:none">
+    <div class="emoji">💰</div>
+    <p>no completed airdrops yet.</p>
+  </div>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="modal-overlay" id="email-modal">
+  <div class="modal">
+    <div class="modal-title">add email account 📧</div>
+    <div class="form-group">
+      <label>email address</label>
+      <input type="email" id="em-email" placeholder="e.g. jane@gmail.com" />
+    </div>
+    <div class="form-group">
+      <label>label (optional)</label>
+      <input type="text" id="em-label" placeholder="e.g. main, burner 1" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('email-modal')">cancel</button>
+      <button class="btn btn-primary" onclick="saveEmail()">save email</button>
+    </div>
+  </div>
+</div>
+
+<!-- TWITTER MODAL -->
+<div class="modal-overlay" id="twitter-modal">
+  <div class="modal">
+    <div class="modal-title">add twitter account 𝕏</div>
+    <div class="form-group">
+      <label>username</label>
+      <input type="text" id="tw-username" placeholder="e.g. janedoe (no @)" />
+    </div>
+    <div class="form-group">
+      <label>label (optional)</label>
+      <input type="text" id="tw-label" placeholder="e.g. main acc, burner 1" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('twitter-modal')">cancel</button>
+      <button class="btn btn-primary" onclick="saveTwitter()">save account</button>
+    </div>
+  </div>
+</div>
+
+<!-- WALLET MODAL -->
+<div class="modal-overlay" id="wallet-modal">
+  <div class="modal">
+    <div class="modal-title">add wallet 👛</div>
+    <div class="form-group">
+      <label>wallet name</label>
+      <input type="text" id="wallet-name" placeholder="e.g. main wallet, burner 1" />
+    </div>
+    <div class="form-group">
+      <label>address</label>
+      <input type="text" id="wallet-address" placeholder="0x... or sol address" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('wallet-modal')">cancel</button>
+      <button class="btn btn-primary" onclick="saveWallet()">save wallet</button>
+    </div>
+  </div>
+</div>
+
+<!-- AIRDROP MODAL -->
+<div class="modal-overlay" id="airdrop-modal">
+  <div class="modal">
+    <div class="modal-title">add airdrop 🪂</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>project name</label>
+        <input type="text" id="ad-name" placeholder="e.g. LayerZero" />
+      </div>
+      <div class="form-group">
+        <label>project link</label>
+        <input type="url" id="ad-link" placeholder="https://..." />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>status</label>
+        <select id="ad-status">
+          <option value="ongoing">ongoing</option>
+          <option value="completed">completed</option>
+          <option value="claim">claim</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>type</label>
+        <select id="ad-type">
+          <option value="daily">daily</option>
+          <option value="waitlist">waitlist</option>
+          <option value="testnet">testnet</option>
+          <option value="mainnet">mainnet</option>
+          <option value="social">social</option>
+          <option value="defi">defi</option>
+          <option value="nft">nft</option>
+          <option value="galxe">galxe</option>
+          <option value="zealy">zealy</option>
+          <option value="other">other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>start date</label>
+        <input type="date" id="ad-date" />
+      </div>
+      <div class="form-group">
+        <label>reward (optional)</label>
+        <input type="text" id="ad-reward" placeholder="e.g. TBD, 100 TOKEN" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>wallets used</label>
+      <div class="wallet-checkboxes" id="wallet-checkboxes">
+        <span style="color:var(--muted); font-size:0.8rem;">no wallets added yet</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>twitter accounts used</label>
+      <div class="wallet-checkboxes" id="twitter-checkboxes">
+        <span style="color:var(--muted); font-size:0.8rem;">no twitter accounts added yet</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>emails used</label>
+      <div class="wallet-checkboxes" id="email-checkboxes">
+        <span style="color:var(--muted); font-size:0.8rem;">no email accounts added yet</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>notes (optional)</label>
+      <textarea id="ad-notes" rows="2" placeholder="anything to remember..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('airdrop-modal')">cancel</button>
+      <button class="btn btn-primary" onclick="saveAirdrop()">save airdrop</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT AIRDROP MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">edit airdrop ✏️</div>
+    <input type="hidden" id="edit-id" />
+    <div class="form-row">
+      <div class="form-group">
+        <label>project name</label>
+        <input type="text" id="edit-name" placeholder="e.g. LayerZero" />
+      </div>
+      <div class="form-group">
+        <label>project link</label>
+        <input type="url" id="edit-link" placeholder="https://..." />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>status</label>
+        <select id="edit-status">
+          <option value="ongoing">ongoing</option>
+          <option value="completed">completed</option>
+          <option value="claim">claim</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>type</label>
+        <select id="edit-type">
+          <option value="daily">daily</option>
+          <option value="waitlist">waitlist</option>
+          <option value="testnet">testnet</option>
+          <option value="mainnet">mainnet</option>
+          <option value="social">social</option>
+          <option value="defi">defi</option>
+          <option value="nft">nft</option>
+          <option value="galxe">galxe</option>
+          <option value="zealy">zealy</option>
+          <option value="other">other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>start date</label>
+        <input type="date" id="edit-date" />
+      </div>
+      <div class="form-group">
+        <label>reward (optional)</label>
+        <input type="text" id="edit-reward" placeholder="e.g. TBD, 100 TOKEN" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>wallets used</label>
+      <div class="wallet-checkboxes" id="edit-wallet-checkboxes"></div>
+    </div>
+    <div class="form-group">
+      <label>twitter accounts used</label>
+      <div class="wallet-checkboxes" id="edit-twitter-checkboxes"></div>
+    </div>
+    <div class="form-group">
+      <label>emails used</label>
+      <div class="wallet-checkboxes" id="edit-email-checkboxes"></div>
+    </div>
+    <div class="form-group">
+      <label>notes (optional)</label>
+      <textarea id="edit-notes" rows="2" placeholder="anything to remember..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('edit-modal')">cancel</button>
+      <button class="btn btn-primary" onclick="updateAirdrop()">save changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://ljfamtonwmnztbkelepu.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqZmFtdG9ud21uenRia2VsZXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3OTM3NjQsImV4cCI6MjA5MDM2OTc2NH0._yfOW_N857vWuANqrnDci3NKETo0dnKMwcUL-3JrLag';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let wallets = [];
+  let twAccounts = [];
+  let emailAccounts = [];
+  let airdrops = [];
+  let rewards = [];
+  let currentFilter = 'all';
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function openModal(id) {
+    if (id === 'airdrop-modal') { renderWalletCheckboxes(); renderTwitterCheckboxes(); renderEmailCheckboxes(); }
+    document.getElementById(id).classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function switchPage(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    el.classList.add('active');
+    if (page === 'rewards') loadRewards();
+    if (page === 'airdrops') loadAirdrops();
+    if (page === 'wallets') { loadWallets(); loadTwitterAccounts(); loadEmailAccounts(); }
+  }
+
+  function setFilter(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderAirdrops();
+  }
+
+  // WALLETS
+  async function loadWallets() {
+    const { data } = await sb.from('wallets').select('*').order('created_at');
+    wallets = data || [];
+    renderWallets();
+  }
+
+  async function saveWallet() {
+    const name = document.getElementById('wallet-name').value.trim();
+    const address = document.getElementById('wallet-address').value.trim();
+    if (!name || !address) return showToast('fill all fields!');
+    const { error } = await sb.from('wallets').insert({ id: Date.now(), name, address });
+    if (error) return showToast('error: ' + error.message);
+    document.getElementById('wallet-name').value = '';
+    document.getElementById('wallet-address').value = '';
+    closeModal('wallet-modal');
+    await loadWallets();
+    showToast('wallet added! 👛');
+  }
+
+  async function deleteWallet(id) {
+    if (!confirm('delete this wallet?')) return;
+    await sb.from('wallets').delete().eq('id', id);
+    await loadWallets();
+    showToast('wallet deleted');
+  }
+
+  function renderWallets() {
+    const grid = document.getElementById('wallets-grid');
+    const empty = document.getElementById('wallets-empty');
+    if (!wallets.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = wallets.map(w => `
+      <div class="wallet-card">
+        <div class="wallet-actions"><button class="btn btn-danger" onclick="deleteWallet(${w.id})">del</button></div>
+        <div class="wallet-name">👛 ${w.name}</div>
+        <div class="wallet-address">${w.address}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderWalletCheckboxes() {
+    const container = document.getElementById('wallet-checkboxes');
+    if (!wallets.length) { container.innerHTML = '<span style="color:var(--muted); font-size:0.8rem;">add wallets first</span>'; return; }
+    container.innerHTML = wallets.map(w => `
+      <label class="wallet-check-item">
+        <input type="checkbox" value="${w.id}" name="wallet-cb" /> ${w.name}
+      </label>
+    `).join('');
+  }
+
+  // TWITTER ACCOUNTS
+  async function loadTwitterAccounts() {
+    const { data } = await sb.from('tw_accounts').select('*').order('created_at');
+    twAccounts = data || [];
+    renderTwitterAccounts();
+  }
+
+  async function saveTwitter() {
+    const username = document.getElementById('tw-username').value.trim().replace('@','');
+    const label = document.getElementById('tw-label').value.trim();
+    if (!username) return showToast('username required!');
+    const { error } = await sb.from('tw_accounts').insert({ id: Date.now(), username, label });
+    if (error) return showToast('error: ' + error.message);
+    document.getElementById('tw-username').value = '';
+    document.getElementById('tw-label').value = '';
+    closeModal('twitter-modal');
+    await loadTwitterAccounts();
+    showToast('twitter account added! 𝕏');
+  }
+
+  async function deleteTwitter(id) {
+    if (!confirm('delete this twitter account?')) return;
+    await sb.from('tw_accounts').delete().eq('id', id);
+    await loadTwitterAccounts();
+    showToast('twitter account deleted');
+  }
+
+  function renderTwitterAccounts() {
+    const grid = document.getElementById('twitter-grid');
+    const empty = document.getElementById('twitter-empty');
+    if (!twAccounts.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = twAccounts.map(t => `
+      <div class="wallet-card" style="border-color:rgba(29,155,240,0.3)">
+        <div class="wallet-actions"><button class="btn btn-danger" onclick="deleteTwitter(${t.id})">del</button></div>
+        <div class="wallet-name" style="color:#1d9bf0">𝕏 @${t.username}</div>
+        ${t.label ? `<div class="wallet-address">${t.label}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function renderTwitterCheckboxes() {
+    const container = document.getElementById('twitter-checkboxes');
+    if (!twAccounts.length) { container.innerHTML = '<span style="color:var(--muted); font-size:0.8rem;">add twitter accounts first</span>'; return; }
+    container.innerHTML = twAccounts.map(t => `
+      <label class="wallet-check-item">
+        <input type="checkbox" value="${t.id}" name="twitter-cb" /> @${t.username}${t.label ? ` (${t.label})` : ''}
+      </label>
+    `).join('');
+  }
+
+  // EMAIL ACCOUNTS
+  async function loadEmailAccounts() {
+    const { data } = await sb.from('email_accounts').select('*').order('created_at');
+    emailAccounts = data || [];
+    renderEmailAccounts();
+  }
+
+  async function saveEmail() {
+    const email = document.getElementById('em-email').value.trim();
+    const label = document.getElementById('em-label').value.trim();
+    if (!email) return showToast('email required!');
+    const { error } = await sb.from('email_accounts').insert({ id: Date.now(), email, label });
+    if (error) return showToast('error: ' + error.message);
+    document.getElementById('em-email').value = '';
+    document.getElementById('em-label').value = '';
+    closeModal('email-modal');
+    await loadEmailAccounts();
+    showToast('email added! 📧');
+  }
+
+  async function deleteEmail(id) {
+    if (!confirm('delete this email?')) return;
+    await sb.from('email_accounts').delete().eq('id', id);
+    await loadEmailAccounts();
+    showToast('email deleted');
+  }
+
+  function renderEmailAccounts() {
+    const grid = document.getElementById('email-grid');
+    const empty = document.getElementById('email-empty');
+    if (!emailAccounts.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = emailAccounts.map(e => `
+      <div class="wallet-card" style="border-color:rgba(252,92,125,0.3)">
+        <div class="wallet-actions"><button class="btn btn-danger" onclick="deleteEmail(${e.id})">del</button></div>
+        <div class="wallet-name" style="color:var(--accent2)">📧 ${e.email}</div>
+        ${e.label ? `<div class="wallet-address">${e.label}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function renderEmailCheckboxes() {
+    const container = document.getElementById('email-checkboxes');
+    if (!emailAccounts.length) { container.innerHTML = '<span style="color:var(--muted); font-size:0.8rem;">add email accounts first</span>'; return; }
+    container.innerHTML = emailAccounts.map(e => `
+      <label class="wallet-check-item">
+        <input type="checkbox" value="${e.id}" name="email-cb" /> ${e.email}${e.label ? ` (${e.label})` : ''}
+      </label>
+    `).join('');
+  }
+
+  function getEmailNames(ids) {
+    if (!ids) return '';
+    return ids.map(id => {
+      const e = emailAccounts.find(e => e.id === id);
+      return e ? `<span class="wallet-tag" style="color:var(--accent2);border-color:rgba(252,92,125,0.3);background:rgba(252,92,125,0.1)">${e.email}</span>` : '';
+    }).join('');
+  }
+
+  // AIRDROPS
+  async function loadAirdrops() {
+    const { data } = await sb.from('airdrops').select('*').order('created_at', { ascending: false });
+    airdrops = data || [];
+    renderAirdrops();
+  }
+
+  async function saveAirdrop() {
+    const name = document.getElementById('ad-name').value.trim();
+    const link = document.getElementById('ad-link').value.trim();
+    const status = document.getElementById('ad-status').value;
+    const type = document.getElementById('ad-type').value;
+    const date = document.getElementById('ad-date').value;
+    const reward = document.getElementById('ad-reward').value.trim();
+    const notes = document.getElementById('ad-notes').value.trim();
+    const selWallets = [...document.querySelectorAll('input[name="wallet-cb"]:checked')].map(cb => parseInt(cb.value));
+    const selTwitter = [...document.querySelectorAll('input[name="twitter-cb"]:checked')].map(cb => parseInt(cb.value));
+    const selEmails = [...document.querySelectorAll('input[name="email-cb"]:checked')].map(cb => parseInt(cb.value));
+
+    if (!name) return showToast('project name required!');
+
+    const { error } = await sb.from('airdrops').insert({
+      id: Date.now(), name, link, status, type, date, reward, notes,
+      wallets: selWallets, tw_accounts: selTwitter, email_accounts: selEmails
+    });
+
+    if (error) return showToast('error: ' + error.message);
+
+    document.getElementById('ad-name').value = '';
+    document.getElementById('ad-link').value = '';
+    document.getElementById('ad-reward').value = '';
+    document.getElementById('ad-notes').value = '';
+    closeModal('airdrop-modal');
+    await loadAirdrops();
+    showToast('airdrop added! 🪂');
+  }
+
+  function openEditModal(id) {
+    const a = airdrops.find(a => a.id === id);
+    if (!a) return;
+    document.getElementById('edit-id').value = a.id;
+    document.getElementById('edit-name').value = a.name || '';
+    document.getElementById('edit-link').value = a.link || '';
+    document.getElementById('edit-status').value = a.status || 'ongoing';
+    document.getElementById('edit-type').value = a.type || 'daily';
+    document.getElementById('edit-date').value = a.date || '';
+    document.getElementById('edit-reward').value = a.reward || '';
+    document.getElementById('edit-notes').value = a.notes || '';
+
+    // render checkboxes with pre-checked values
+    const wc = document.getElementById('edit-wallet-checkboxes');
+    wc.innerHTML = wallets.length ? wallets.map(w => `
+      <label class="wallet-check-item">
+        <input type="checkbox" value="${w.id}" name="edit-wallet-cb" ${(a.wallets||[]).includes(w.id)?'checked':''}/> ${w.name}
+      </label>`).join('') : '<span style="color:var(--muted);font-size:0.8rem">no wallets</span>';
+
+    const tc = document.getElementById('edit-twitter-checkboxes');
+    tc.innerHTML = twAccounts.length ? twAccounts.map(t => `
+      <label class="wallet-check-item">
+        <input type="checkbox" value="${t.id}" name="edit-twitter-cb" ${(a.tw_accounts||[]).includes(t.id)?'checked':''}/> @${t.username}
+      </label>`).join('') : '<span style="color:var(--muted);font-size:0.8rem">no twitter accounts</span>';
+
+    const ec = document.getElementById('edit-email-checkboxes');
+    ec.innerHTML = emailAccounts.length ? emailAccounts.map(e => `
+      <label class="wallet-check-item">
+        <input type="checkbox" value="${e.id}" name="edit-email-cb" ${(a.email_accounts||[]).includes(e.id)?'checked':''}/> ${e.email}
+      </label>`).join('') : '<span style="color:var(--muted);font-size:0.8rem">no emails</span>';
+
+    document.getElementById('edit-modal').classList.add('open');
+  }
+
+  async function updateAirdrop() {
+    const id = parseInt(document.getElementById('edit-id').value);
+    const name = document.getElementById('edit-name').value.trim();
+    const link = document.getElementById('edit-link').value.trim();
+    const status = document.getElementById('edit-status').value;
+    const type = document.getElementById('edit-type').value;
+    const date = document.getElementById('edit-date').value;
+    const reward = document.getElementById('edit-reward').value.trim();
+    const notes = document.getElementById('edit-notes').value.trim();
+    const selWallets = [...document.querySelectorAll('input[name="edit-wallet-cb"]:checked')].map(cb => parseInt(cb.value));
+    const selTwitter = [...document.querySelectorAll('input[name="edit-twitter-cb"]:checked')].map(cb => parseInt(cb.value));
+    const selEmails = [...document.querySelectorAll('input[name="edit-email-cb"]:checked')].map(cb => parseInt(cb.value));
+
+    if (!name) return showToast('project name required!');
+
+    const { error } = await sb.from('airdrops').update({
+      name, link, status, type, date, reward, notes,
+      wallets: selWallets, tw_accounts: selTwitter, email_accounts: selEmails
+    }).eq('id', id);
+
+    if (error) return showToast('error: ' + error.message);
+    closeModal('edit-modal');
+    await loadAirdrops();
+    showToast('airdrop updated! ✅');
+  }
+
+  async function deleteAirdrop(id) {
+    if (!confirm('delete this airdrop?')) return;
+    await sb.from('airdrops').delete().eq('id', id);
+    await loadAirdrops();
+    showToast('airdrop deleted');
+  }
+
+  async function updateStatus(id, val) {
+    await sb.from('airdrops').update({ status: val }).eq('id', id);
+    const a = airdrops.find(a => a.id === id);
+    if (a) a.status = val;
+    renderAirdrops();
+  }
+
+  function getWalletNames(ids) {
+    if (!ids) return '';
+    return ids.map(id => {
+      const w = wallets.find(w => w.id === id);
+      return w ? `<span class="wallet-tag">${w.name}</span>` : '';
+    }).join('');
+  }
+
+  function getTwitterNames(ids) {
+    if (!ids) return '';
+    return ids.map(id => {
+      const t = twAccounts.find(t => t.id === id);
+      return t ? `<span class="wallet-tag" style="color:#1d9bf0;border-color:rgba(29,155,240,0.3);background:rgba(29,155,240,0.1)">@${t.username}</span>` : '';
+    }).join('');
+  }
+
+  function renderAirdrops() {
+    const tbody = document.getElementById('airdrops-tbody');
+    const empty = document.getElementById('airdrops-empty');
+    const filtered = currentFilter === 'all' ? airdrops : airdrops.filter(a => a.status === currentFilter);
+
+    renderStats();
+
+    if (!filtered.length) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      document.querySelector('.table-wrap').style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    document.querySelector('.table-wrap').style.display = 'block';
+
+    tbody.innerHTML = filtered.map((a, i) => `
+      <tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td>
+          <div class="project-name">${a.name}</div>
+          ${a.link ? `<a class="project-link" href="${a.link}" target="_blank">↗ visit</a>` : ''}
+        </td>
+        <td><span class="badge type-badge">${a.type}</span></td>
+        <td><div class="wallet-tags">${getWalletNames(a.wallets)}</div></td>
+        <td><div class="wallet-tags">${getTwitterNames(a.tw_accounts)}</div></td>
+        <td><div class="wallet-tags">${getEmailNames(a.email_accounts)}</div></td>
+        <td>
+          <select onchange="updateStatus(${a.id}, this.value)" style="width:auto;padding:0.25rem 0.5rem;font-size:0.75rem;border-radius:8px">
+            <option value="ongoing" ${a.status==='ongoing'?'selected':''}>ongoing</option>
+            <option value="completed" ${a.status==='completed'?'selected':''}>completed</option>
+            <option value="claim" ${a.status==='claim'?'selected':''}>claim</option>
+          </select>
+        </td>
+        <td style="color:var(--muted);white-space:nowrap">${a.date || '-'}</td>
+        <td style="color:var(--accent)">${a.reward || 'TBD'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-sm" style="background:rgba(124,92,252,0.15);color:var(--accent);border:1px solid rgba(124,92,252,0.3);margin-right:0.3rem" onclick="openEditModal(${a.id})">edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAirdrop(${a.id})">del</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function renderStats() {
+    const total = airdrops.length;
+    const ongoing = airdrops.filter(a => a.status==='ongoing').length;
+    const completed = airdrops.filter(a => a.status==='completed').length;
+    const claim = airdrops.filter(a => a.status==='claim').length;
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card"><div class="stat-label">total</div><div class="stat-value">${total}</div></div>
+      <div class="stat-card"><div class="stat-label">ongoing</div><div class="stat-value">${ongoing}</div></div>
+      <div class="stat-card"><div class="stat-label">completed</div><div class="stat-value">${completed}</div></div>
+      <div class="stat-card"><div class="stat-label">claimable</div><div class="stat-value">${claim}</div></div>
+    `;
+  }
+
+  // REWARDS
+  async function loadRewards() {
+    const { data: rData } = await sb.from('rewards').select('*');
+    rewards = rData || [];
+    const completedAirdrops = airdrops.filter(a => a.status === 'completed' || a.status === 'claim');
+    renderRewards(completedAirdrops);
+  }
+
+  async function saveRewardRow(airdropId) {
+    const token = document.getElementById(`r-token-${airdropId}`).value;
+    const amount = parseFloat(document.getElementById(`r-amount-${airdropId}`).value) || 0;
+    const usd = parseFloat(document.getElementById(`r-usd-${airdropId}`).value) || 0;
+    const notes = document.getElementById(`r-notes-${airdropId}`).value;
+
+    const existing = rewards.find(r => r.airdrop_id === airdropId);
+    if (existing) {
+      await sb.from('rewards').update({ token, amount, usd, notes }).eq('airdrop_id', airdropId);
+    } else {
+      await sb.from('rewards').insert({ airdrop_id: airdropId, token, amount, usd, notes });
+    }
+    await loadRewards();
+    showToast('reward saved! 💰');
+  }
+
+  function renderRewards(completedAirdrops) {
+    const tbody = document.getElementById('rewards-tbody');
+    const empty = document.getElementById('rewards-empty');
+
+    if (!completedAirdrops || !completedAirdrops.length) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      document.querySelector('.reward-table-wrap').style.display = 'none';
+      document.getElementById('total-usd').textContent = '$0';
+      return;
+    }
+
+    empty.style.display = 'none';
+    document.querySelector('.reward-table-wrap').style.display = 'block';
+
+    tbody.innerHTML = completedAirdrops.map(a => {
+      const r = rewards.find(r => r.airdrop_id === a.id) || {};
+      return `
+        <tr>
+          <td>
+            <div class="project-name">${a.name}</div>
+            ${a.link ? `<a class="project-link" href="${a.link}" target="_blank">↗ visit</a>` : ''}
+          </td>
+          <td><input id="r-token-${a.id}" type="text" placeholder="e.g. ARB" value="${r.token||''}" style="width:90px;padding:0.3rem 0.5rem;font-size:0.8rem" /></td>
+          <td><input id="r-amount-${a.id}" type="number" placeholder="0" value="${r.amount||''}" style="width:90px;padding:0.3rem 0.5rem;font-size:0.8rem" /></td>
+          <td><input id="r-usd-${a.id}" type="number" placeholder="$0" value="${r.usd||''}" style="width:90px;padding:0.3rem 0.5rem;font-size:0.8rem" /></td>
+          <td><input id="r-notes-${a.id}" type="text" placeholder="notes..." value="${r.notes||''}" style="width:120px;padding:0.3rem 0.5rem;font-size:0.8rem" /></td>
+          <td><button class="btn btn-primary btn-sm" onclick="saveRewardRow(${a.id})">save</button></td>
+        </tr>
+      `;
+    }).join('');
+
+    const totalUsd = rewards.reduce((sum, r) => sum + (parseFloat(r.usd)||0), 0);
+    document.getElementById('total-usd').textContent = '$' + totalUsd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  // INIT
+  async function init() {
+    await Promise.all([loadWallets(), loadTwitterAccounts(), loadEmailAccounts(), loadAirdrops()]);
+  }
+
+  init();
+</script>
+</body>
+</html>
